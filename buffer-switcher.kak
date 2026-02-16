@@ -24,7 +24,8 @@ define-command buffer-switcher %{
                 exec gg
             }
             map buffer normal <ret> ': buffer-switcher-switch<ret>'
-            map buffer normal y ': buffer-switcher-sort-buffers<ret>'
+            alias buffer w buffer-switcher-sort-buffers
+            alias buffer write buffer-switcher-sort-buffers
             map buffer normal <esc> ': delete-buffer *buffer-switcher*<ret>'
             hook global WinDisplay .* %{ try %{ delete-buffer *buffer-switcher* } }
             hook global WinCreate .* %{ try %{ delete-buffer *buffer-switcher* } }
