@@ -24,8 +24,11 @@ define-command buffer-switcher %{
                 exec gg
             }
             map buffer normal <ret> ': buffer-switcher-switch<ret>'
+            map buffer normal y ': buffer-switcher-sort-buffers<ret>'
             map buffer normal <esc> ': delete-buffer *buffer-switcher*<ret>'
-            hook global WinDisplay -once .* %{ try %{ delete-buffer *buffer-switcher* } }
+            hook global WinDisplay .* %{ try %{ delete-buffer *buffer-switcher* } }
+            hook global WinCreate .* %{ try %{ delete-buffer *buffer-switcher* } }
+            hook global ClientCreate .* %{ try %{ delete-buffer *buffer-switcher* } }
         }
     }
 }
@@ -34,7 +37,11 @@ define-command -hidden buffer-switcher-switch %{
     try buffer-switcher-delete-buffers
     try buffer-switcher-sort-buffers
     exec ',;xH'
-    buffer %val{selection}
+    try %{
+        buffer %val{selection}
+    } catch %{
+        edit %val{selection}
+    }
     try %{ delete-buffer *buffer-switcher* }
 }
 
@@ -85,6 +92,15 @@ define-command -hidden buffer-switcher-delete-buffers %{
 define-command -hidden buffer-switcher-sort-buffers %{
     eval -buffer *buffer-switcher* %{
         exec '%<a-s>H'
+        evaluate-commands -itersel %{
+            try %{
+                evaluate-commands "buffer=%val{selection}" nop
+            } catch %{
+                evaluate-commands -draft %{
+                    edit %val{selection}
+                }
+            }
+        }
         arrange-buffers %val{selections}
     }
 }
